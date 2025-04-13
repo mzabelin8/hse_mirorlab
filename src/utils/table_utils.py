@@ -148,4 +148,33 @@ def convert_table_to_dataframe(table_data):
 
     # Создаем DataFrame
     df = pd.DataFrame(data_rows, columns=col_names)
-    return df 
+    return df
+
+
+def safe_parse_table(table_data):
+    """
+    Пытается распарсить таблицу стандартным способом, затем резервным.
+    
+    Args:
+        table_data: Табличные данные
+        
+    Returns:
+        pandas.DataFrame: Таблица в виде DataFrame
+    """
+    try:
+        return convert_table_to_dataframe(table_data)
+    except Exception:
+        return parse_table_2(table_data)
+
+
+def save_table_as_dict(table):
+    """
+    Конвертирует pandas DataFrame в словарь.
+    
+    Args:
+        table: pandas DataFrame
+        
+    Returns:
+        dict: Таблица в виде словаря
+    """
+    return table.to_dict(orient="list") 

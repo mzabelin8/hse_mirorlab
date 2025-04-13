@@ -106,4 +106,52 @@ class PatientParser:
         for el in section_fields:
             result.append(el['text'])
             
-        return result 
+        return result
+    
+    @staticmethod
+    def parse_conditions_as_key_value(conditions):
+        """
+        Парсит каждую строку условия как 'ключ: значение', если возможно.
+        
+        Args:
+            conditions: Список строк с условиями
+            
+        Returns:
+            dict: Структурированный словарь с условиями
+        """
+        structured = {
+            "raw_list": []
+        }
+
+        for line in conditions:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                key = key.strip()
+                value = value.strip()
+                structured[key] = value
+                structured["raw_list"].append({
+                    "type": key.lower(),
+                    "text": value
+                })
+            else:
+                # Если строка не содержит ":", записываем её как есть
+                structured["raw_list"].append({
+                    "type": "unknown",
+                    "text": line.strip()
+                })
+
+        return structured
+    
+    @staticmethod
+    def get_structured_condition(data):
+        """
+        Извлекает структурированное состояние пациента из данных.
+        
+        Args:
+            data: JSON данные документа
+            
+        Returns:
+            dict: Структурированное состояние пациента
+        """
+        conditions = PatientParser.get_condition(data)
+        return PatientParser.parse_conditions_as_key_value(conditions) 
