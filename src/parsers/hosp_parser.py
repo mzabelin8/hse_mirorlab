@@ -1,72 +1,65 @@
 """
-Парсер для информации о госпитализации.
+Parser for hospitalization information.
 """
 from src.utils.helpers import find_section_by_optimized_path
 from src.utils.table_utils import parse_table, parse_table_2, parse_table_wtheader
 from src.parsers.base_parser import BaseParser, SUB_PATH
 
 
-class HospParser:
+def get_gosp_info(data, type='table'):
     """
-    Парсер для извлечения информации о госпитализации из медицинских документов.
+    Extracts hospitalization information from data.
+    
+    Args:
+        data: Document JSON data
+        type: Type of returned data ('table' - DataFrame, 'raw' - JSON)
+        
+    Returns:
+        tuple: (table, type_gosp, way_gosp) - table, hospitalization type, hospitalization route
     """
+    short_path_to_section = ['text']
     
-    @staticmethod
-    def get_gosp_info(data, type='table'):
-        """
-        Извлекает информацию о госпитализации из данных.
-        
-        Args:
-            data: JSON данные документа
-            type: Тип возвращаемых данных ('table' - DataFrame, 'raw' - JSON)
-            
-        Returns:
-            tuple: (table, type_gosp, way_gosp) - таблица, тип госпитализации, путь госпитализации
-        """
-        short_path_to_section = ['text']
-        
-        section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
-        table = section_fields
-        if type == 'table':
-            table = parse_table(section_fields)
+    section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
+    table = section_fields
+    if type == 'table':
+        table = parse_table(section_fields)
 
-        short_path_to_section = ['entry', 2, 
-                                'observation', 
-                                'value']
-        
-        section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
-        type_gosp = section_fields['displayName']
-
-        short_path_to_section = ['entry', 3, 
-                                'observation', 
-                                'value']
-        
-        section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
-        way_gosp = section_fields['displayName']
-
-        return table, type_gosp, way_gosp
+    short_path_to_section = ['entry', 2, 
+                            'observation', 
+                            'value']
     
-    @staticmethod
-    def get_diagnosis(data, type='table'):
-        """
-        Извлекает диагноз из данных.
+    section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
+    type_gosp = section_fields['displayName']
+
+    short_path_to_section = ['entry', 3, 
+                            'observation', 
+                            'value']
+    
+    section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
+    way_gosp = section_fields['displayName']
+
+    return table, type_gosp, way_gosp
+
+def get_diagnosis(data, type='table'):
+    """
+    Extracts diagnosis from data.
+    
+    Args:
+        data: Document JSON data
+        type: Type of returned data ('table' - DataFrame, 'raw' - JSON)
         
-        Args:
-            data: JSON данные документа
-            type: Тип возвращаемых данных ('table' - DataFrame, 'raw' - JSON)
-            
-        Returns:
-            DataFrame или dict: Таблица с диагнозом
-        """
-        short_path_to_section = ['component', 1, 
-                                'section', 
-                                'component', 
-                                'section', 
-                                'text']
+    Returns:
+        DataFrame or dict: Diagnosis table
+    """
+    short_path_to_section = ['component', 1, 
+                            'section', 
+                            'component', 
+                            'section', 
+                            'text']
 
-        section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
-        table = section_fields
-        if type == 'table':
-            table = parse_table(section_fields)
+    section_fields = find_section_by_optimized_path(data, SUB_PATH + short_path_to_section)
+    table = section_fields
+    if type == 'table':
+        table = parse_table(section_fields)
 
-        return table 
+    return table 

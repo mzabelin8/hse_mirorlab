@@ -1,23 +1,23 @@
 """
-Вспомогательные функции для работы с данными.
+Helper functions for data processing.
 """
 import pandas as pd
 
 
 def find_section_by_optimized_path(data, short_path, fields=None, prefix='{urn:hl7-org:v3}'):
     """
-    Навигация по вложенной структуре JSON по указанному пути, автоматически добавляя префикс к строковым элементам пути.
-    Опционально возвращает только указанные поля из конечного блока.
+    Navigate through nested JSON structure by specified path, automatically adding a prefix to string path elements.
+    Optionally returns only specified fields from the final block.
 
     Args:
-        data: Данные JSON в виде вложенного словаря Python.
-        short_path: Упрощенный путь к нужному разделу в виде списка ключей и индексов.
-        fields: Опционально. Кортеж или список имен полей для возврата из конечного блока. 
-                Если None, возвращает весь блок.
-        prefix: Префикс, добавляемый к строковым элементам пути.
+        data: JSON data as a nested Python dictionary.
+        short_path: Simplified path to the desired section as a list of keys and indices.
+        fields: Optional. Tuple or list of field names to return from the final block.
+                If None, returns the entire block.
+        prefix: Prefix added to string path elements.
     
     Returns:
-        Раздел по указанному пути, или конкретные поля из раздела, или None, если путь недействителен.
+        The section at the specified path, or specific fields from the section, or None if the path is invalid.
     """
     current = data
     full_path = [(prefix + element) if isinstance(element, str)
@@ -25,9 +25,9 @@ def find_section_by_optimized_path(data, short_path, fields=None, prefix='{urn:h
 
     try:
         for key in full_path:
-            if isinstance(current, list):  # Обработка индексов списка
+            if isinstance(current, list):  # Handle list indices
                 current = current[int(key)]
-            else:  # Обработка ключей словаря
+            else:  # Handle dictionary keys
                 current = current[key]
 
         if fields and isinstance(fields, (list, tuple)) and isinstance(current, dict):
@@ -35,18 +35,18 @@ def find_section_by_optimized_path(data, short_path, fields=None, prefix='{urn:h
 
         return current
     except (KeyError, IndexError, ValueError, TypeError):
-        return None  # Путь недействителен
+        return None  # Path is invalid
 
 
 def clean_keys(obj):
     """
-    Рекурсивно удаляет префиксы пространств имен из ключей словаря.
+    Recursively removes namespace prefixes from dictionary keys.
     
     Args:
-        obj: Объект (словарь, список или скаляр) для обработки
+        obj: Object (dictionary, list, or scalar) to process
         
     Returns:
-        Объект с очищенными ключами
+        Object with cleaned keys
     """
     if isinstance(obj, dict):
         new_dict = {}

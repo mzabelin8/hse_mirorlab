@@ -1,5 +1,5 @@
 """
-Утилиты для работы с табличными данными из XML/JSON.
+Utilities for working with tabular data from XML/JSON.
 """
 import pandas as pd
 from src.utils.helpers import clean_keys
@@ -7,14 +7,14 @@ from src.utils.helpers import clean_keys
 
 def parse_table(json_data, prefix='{urn:hl7-org:v3}'):
     """
-    Парсинг таблицы из JSON данных.
+    Parse table from JSON data.
     
     Args:
-        json_data: JSON данные, содержащие таблицу
-        prefix: Префикс для ключей в JSON
+        json_data: JSON data containing a table
+        prefix: Prefix for keys in JSON
         
     Returns:
-        pandas.DataFrame: Таблица в виде DataFrame
+        pandas.DataFrame: Table as a DataFrame
     """
     adjusted_rows = []
     headers = [header['text'] for header in json_data[f'{prefix}table'][f'{prefix}thead'][f'{prefix}tr'][f'{prefix}th']]
@@ -23,67 +23,67 @@ def parse_table(json_data, prefix='{urn:hl7-org:v3}'):
         current_row = []
         for cell in row[f'{prefix}td']:
             current_row.append(cell[f'{prefix}content']['text'])
-        # Проверка, содержит ли строка меньше элементов, чем заголовки, если да, добавить заполнитель
+        # Check if the row contains fewer elements than headers, if yes, add a placeholder
         if len(current_row) < len(headers):
             current_row.append('None')
         adjusted_rows.append(current_row)
 
-    # Создаем DataFrame с корректированными строками
+    # Create DataFrame with adjusted rows
     adjusted_df = pd.DataFrame(adjusted_rows, columns=headers)
     return adjusted_df
 
 
 def parse_table_2(json_data, prefix='{urn:hl7-org:v3}'):
     """
-    Парсинг небольших таблиц из JSON данных.
-    Лучше работает с малыми таблицами.
+    Parse small tables from JSON data.
+    Works better with small tables.
     
     Args:
-        json_data: JSON данные, содержащие таблицу
-        prefix: Префикс для ключей в JSON
+        json_data: JSON data containing a table
+        prefix: Prefix for keys in JSON
         
     Returns:
-        pandas.DataFrame: Таблица в виде DataFrame
+        pandas.DataFrame: Table as a DataFrame
     """
     adjusted_rows = []
     headers = [header['text'] for header in json_data[f'{prefix}table'][f'{prefix}thead'][f'{prefix}tr'][f'{prefix}th']]
 
-    # Получаем строки таблицы
+    # Get table rows
     rows = json_data[f'{prefix}table'][f'{prefix}tbody'][f'{prefix}tr']
 
-    # Если rows - словарь (одна строка), конвертируем в список
+    # If rows is a dictionary (one row), convert to list
     if isinstance(rows, dict):
         rows = [rows]
 
-    # Обрабатываем каждую строку
+    # Process each row
     for row in rows:
         current_row = []
         for cell in row[f'{prefix}td']:
-            # Обрабатываем случаи, когда контент может отсутствовать или быть пустым
+            # Handle cases where content may be missing or empty
             text_content = cell[f'{prefix}content'].get('text', 'None')
             current_row.append(text_content)
 
-        # Проверяем, содержит ли строка меньше элементов, чем заголовки, и дополняем 'None' для отсутствующих значений
+        # Check if the row contains fewer elements than headers, and append 'None' for missing values
         while len(current_row) < len(headers):
             current_row.append('None')
 
         adjusted_rows.append(current_row)
 
-    # Создаем DataFrame с корректированными строками
+    # Create DataFrame with adjusted rows
     adjusted_df = pd.DataFrame(adjusted_rows, columns=headers)
     return adjusted_df
 
 
 def parse_table_wtheader(json_data, prefix='{urn:hl7-org:v3}'):
     """
-    Парсинг таблицы из JSON данных, автоматически генерируя заголовки.
+    Parse table from JSON data, automatically generating headers.
     
     Args:
-        json_data: JSON данные, содержащие таблицу
-        prefix: Префикс для ключей в JSON
+        json_data: JSON data containing a table
+        prefix: Prefix for keys in JSON
         
     Returns:
-        pandas.DataFrame: Таблица в виде DataFrame
+        pandas.DataFrame: Table as a DataFrame
     """
     adjusted_rows = []
     if json_data[f'{prefix}table'][f'{prefix}tbody'][f'{prefix}tr']:
@@ -96,30 +96,30 @@ def parse_table_wtheader(json_data, prefix='{urn:hl7-org:v3}'):
     for row in json_data[f'{prefix}table'][f'{prefix}tbody'][f'{prefix}tr']:
         current_row = []
         for cell in row[f'{prefix}td']:
-            # По умолчанию 'None', если 'text' недоступен
+            # Default to 'None' if 'text' is not available
             cell_text = cell[f'{prefix}content'].get('text', 'None')
             current_row.append(cell_text)
         adjusted_rows.append(current_row)
 
-    # Создаем DataFrame с корректированными строками
+    # Create DataFrame with adjusted rows
     adjusted_df = pd.DataFrame(adjusted_rows, columns=headers)
     return adjusted_df
 
 
 def convert_table_to_dataframe(table_data):
     """
-    Конвертация табличных данных в Pandas DataFrame.
+    Convert tabular data to Pandas DataFrame.
     
     Args:
-        table_data: Табличные данные
+        table_data: Tabular data
         
     Returns:
-        pandas.DataFrame: Таблица в виде DataFrame
+        pandas.DataFrame: Table as a DataFrame
     """
-    # Очищаем ключи от префиксов пространств имен
+    # Clean keys from namespace prefixes
     cleaned_data = clean_keys(table_data)
 
-    # Извлекаем имена колонок из заголовков таблицы
+    # Extract column names from table headers
     headers = cleaned_data['table']['thead']['tr']['th']
     col_names = [th.get('text', None) for th in headers]
 
@@ -135,31 +135,31 @@ def convert_table_to_dataframe(table_data):
                     row_data.append(cell['content']['text'])
                 else:
                     row_data.append(None)
-            # Убеждаемся, что каждая строка имеет одинаковое количество столбцов
+            # Ensure each row has the same number of columns
             if len(row_data) < len(col_names):
                 row_data.extend([None]*(len(col_names) - len(row_data)))
             data_rows.append(row_data)
         elif isinstance(td, dict):
-            # Обрабатываем строки с colspan (например, заголовки разделов)
+            # Handle rows with colspan (e.g., section headers)
             if 'content' in td and 'text' in td['content']:
                 text = td['content']['text']
                 row_data = [text] + [None]*(len(col_names)-1)
                 data_rows.append(row_data)
 
-    # Создаем DataFrame
+    # Create DataFrame
     df = pd.DataFrame(data_rows, columns=col_names)
     return df
 
 
 def safe_parse_table(table_data):
     """
-    Пытается распарсить таблицу стандартным способом, затем резервным.
+    Attempts to parse a table using standard method, then fallback method.
     
     Args:
-        table_data: Табличные данные
+        table_data: Tabular data
         
     Returns:
-        pandas.DataFrame: Таблица в виде DataFrame
+        pandas.DataFrame: Table as a DataFrame
     """
     try:
         return convert_table_to_dataframe(table_data)
@@ -169,12 +169,12 @@ def safe_parse_table(table_data):
 
 def save_table_as_dict(table):
     """
-    Конвертирует pandas DataFrame в словарь.
+    Converts pandas DataFrame to dictionary.
     
     Args:
         table: pandas DataFrame
         
     Returns:
-        dict: Таблица в виде словаря
+        dict: Table as a dictionary
     """
     return table.to_dict(orient="list") 
