@@ -1,81 +1,104 @@
-# Парсер Медицинских Данных
+# Medical Data Parser
 
-Библиотека для парсинга и извлечения структурированной информации из медицинских XML/JSON документов.
+A library for parsing and extracting structured information from medical XML/JSON documents.
 
-## Структура Проекта
+## Project Structure
 
 ```
 src/
 ├── __init__.py
-├── main.py                  # Главный модуль с основными функциями
-├── io/                      # Модуль работы с файлами
+├── io/                      # File operations module
 │   ├── __init__.py
-│   ├── file_converter.py    # Конвертация XML в JSON
-│   └── data_processor.py    # Обработка и сохранение данных
-├── parsers/                 # Модуль с парсерами
+│   ├── file_converter.py    # XML to JSON conversion
+│   └── data_processor.py    # Data processing and saving
+├── parsers/                 # Parsers module
 │   ├── __init__.py
-│   ├── base_parser.py       # Базовый класс для парсеров
-│   ├── patient_parser.py    # Парсер данных пациента
-│   ├── hosp_parser.py       # Парсер данных о госпитализации
-│   ├── ward_parser.py       # Парсер данных об отделениях
-│   ├── final_parser.py      # Парсер финальных таблиц
-│   └── lab_parser.py        # Парсер лабораторных данных
-└── utils/                   # Утилиты
+│   ├── base_parser.py       # Base functions for parsers
+│   ├── patient_parser.py    # Patient data parser
+│   ├── hosp_parser.py       # Hospitalization data parser
+│   ├── ward_parser.py       # Department data parser
+│   ├── final_parser.py      # Final tables parser
+│   └── lab_parser.py        # Laboratory data parser
+└── utils/                   # Utilities
     ├── __init__.py
-    ├── helpers.py           # Вспомогательные функции
-    └── table_utils.py       # Функции для работы с таблицами
+    ├── helpers.py           # Helper functions
+    └── table_utils.py       # Functions for working with tables
 ```
 
-## Примеры использования
+## Usage Examples
 
-### Конвертация XML файла в JSON
+### Converting XML File to JSON
 
 ```python
-from src.main import convert_xml_to_json
+from src.io.file_converter import xml_to_json
 
-convert_xml_to_json('path/to/file.xml', 'path/to/output.json')
+xml_to_json('path/to/file.xml', 'path/to/output.json')
 ```
 
-### Обработка всех XML файлов в директории
+### Processing All XML Files in a Directory
 
 ```python
-from src.main import process_directory
+from src.io.file_converter import process_files_in_directory
 
-process_directory('input_directory', 'output_directory')
+process_files_in_directory('input_directory', 'output_directory')
 ```
 
-### Извлечение структурированных данных из JSON
+### Extracting Structured Data from JSON
 
 ```python
-from src.main import process_json_data
+from src.io.data_processor import modify_json
 
-process_json_data('path/to/json_file.json', 'path/to/output.json')
+modify_json('path/to/json_file.json', 'path/to/output.json')
 ```
 
-### Использование отдельных парсеров
+### Using Individual Parsers
 
 ```python
 import json
-from src.main import patient_parser, hosp_parser
+from src.parsers.patient_parser import get_sex
+from src.parsers.hosp_parser import get_gosp_info
 
-# Загрузка данных
+# Load data
 with open('path/to/json_file.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
-# Извлечение пола пациента
-sex = patient_parser.get_sex(data)
+# Extract patient gender
+sex = get_sex(data)
 
-# Извлечение информации о госпитализации
-table, type_gosp, way_gosp = hosp_parser.get_gosp_info(data)
+# Extract hospitalization information
+table, type_gosp, way_gosp = get_gosp_info(data)
 ```
 
-## Обработка всех файлов
+### Processing All Files
 
-Для обработки всех файлов в директории и сохранения результатов:
+To process all files in a directory and save the results:
 
 ```python
-from src.main import process_all_json_files
+from src.io.data_processor import save_features
 
-process_all_json_files('input_json_directory', 'output_features_directory')
+save_features('input_json_directory', 'output_features_directory')
+```
+
+### Processing Files into Structured Format
+
+```python
+from src.io.data_processor import process_folder_to_structured_format
+
+stats = process_folder_to_structured_format('input_json_directory', 'output_structured_directory')
+print(f"Processed {stats['total']} files with {stats['success']} successes and {stats['errors']} errors")
+```
+
+## Working with Tables
+
+The library provides several functions for working with tabular data:
+
+```python
+from src.utils.table_utils import safe_parse_table, save_table_as_dict
+
+# Parse a table from JSON data
+table_df = safe_parse_table(table_data)
+
+# Convert DataFrame to dictionary
+table_dict = save_table_as_dict(table_df)
 ```
 
