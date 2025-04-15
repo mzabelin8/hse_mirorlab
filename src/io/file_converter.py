@@ -46,21 +46,50 @@ def xml_to_json(xml_file_path, json_file_path):
 def process_files_in_directory(input_directory, output_directory):
     """
     Processes all XML files in the specified directory and converts them to JSON.
+    Handles exceptions for individual files and prints processing statistics.
+    Only error messages are displayed during processing.
     
     Args:
         input_directory: Input directory with XML files
         output_directory: Output directory for JSON files
+        
+    Returns:
+        dict: Statistics of processing (total, success, errors)
     """
     # Create output directory if it doesn't exist
     os.makedirs(output_directory, exist_ok=True)
 
-    # Iterate through each file in the input directory
-    for filename in os.listdir(input_directory):
-        if filename.endswith(".xml"):
-            # Construct full paths for XML and JSON files
-            path_xml = os.path.join(input_directory, filename)
-            path_json = os.path.join(
-                output_directory, filename.replace('.xml', '.json'))
+    # Get list of XML files
+    xml_files = [f for f in os.listdir(input_directory) if f.endswith('.xml')]
+    
+    # Counters for statistics
+    total_files = len(xml_files)
+    success_count = 0
+    error_count = 0
 
+    # Iterate through each file in the input directory
+    for filename in xml_files:
+        # Construct full paths for XML and JSON files
+        path_xml = os.path.join(input_directory, filename)
+        path_json = os.path.join(
+            output_directory, filename.replace('.xml', '.json'))
+
+        try:
             # Convert XML to JSON
-            xml_to_json(path_xml, path_json) 
+            xml_to_json(path_xml, path_json)
+            success_count += 1
+        except Exception as e:
+            error_count += 1
+            print(f"Error processing file {filename}: {str(e)}")
+    
+    # Print statistics
+    print(f"\nProcessing complete!")
+    print(f"Total files: {total_files}")
+    print(f"Successfully processed: {success_count}")
+    print(f"Errors: {error_count}")
+    
+    return {
+        "total": total_files,
+        "success": success_count,
+        "errors": error_count
+    } 
