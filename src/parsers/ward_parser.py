@@ -3,7 +3,7 @@ Parser for department information.
 """
 from src.utils.helpers import find_section_by_optimized_path
 from src.utils.table_utils import parse_table, parse_table_2, parse_table_wtheader
-from src.parsers.base_parser import BaseParser, SUB_PATH
+from src.parsers.base_parser import SUB_PATH
 
 
 def get_ward_table(data, type='table'):

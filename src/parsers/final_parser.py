@@ -3,7 +3,7 @@ Parser for final tables.
 """
 from src.utils.helpers import find_section_by_optimized_path
 from src.utils.table_utils import parse_table_2
-from src.parsers.base_parser import BaseParser, SUB_PATH
+from src.parsers.base_parser import SUB_PATH
 
 
 def get_final_table1(data, type='table'):

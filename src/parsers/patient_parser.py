@@ -2,7 +2,7 @@
 Parser for patient information.
 """
 from src.utils.helpers import find_section_by_optimized_path
-from src.parsers.base_parser import BaseParser, SUB_PATH
+from src.parsers.base_parser import SUB_PATH
 
 
 def get_sex(data):
