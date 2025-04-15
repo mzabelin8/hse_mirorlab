@@ -3,6 +3,7 @@ Module for data processing and saving.
 """
 import os
 import json
+from tqdm import tqdm
 from src.parsers.patient_parser import get_sex, get_age, get_amnez_d, get_amnez_life, get_condition, parse_conditions_as_key_value
 from src.parsers.hosp_parser import get_gosp_info, get_diagnosis
 from src.parsers.ward_parser import get_ward_table, compute_full_wards
@@ -62,6 +63,7 @@ def save_features(input_folder, output_folder):
     Processes all JSON files in the specified directory and saves the extracted data.
     Handles exceptions for individual files and prints processing statistics.
     Only error messages are displayed during processing.
+    Uses tqdm for progress visualization.
     
     Args:
         input_folder: Input directory with JSON files
@@ -81,8 +83,8 @@ def save_features(input_folder, output_folder):
     success_count = 0
     error_count = 0
 
-    # Process each file
-    for idx, file_name in enumerate(files, start=1):
+    # Process each file with progress bar
+    for idx, file_name in enumerate(tqdm(files, desc="Processing JSON files", unit="file"), start=1):
         in_path = os.path.join(input_folder, file_name)
         out_path = os.path.join(output_folder, f"file_{idx}.json")
 
@@ -166,6 +168,7 @@ def process_folder_to_structured_format(input_folder, output_folder):
     Processes all files in a folder, converting them to structured format.
     Handles exceptions for individual files and prints processing statistics.
     Only error messages are displayed during processing.
+    Uses tqdm for progress visualization.
     
     Args:
         input_folder: Input directory with JSON files
@@ -185,8 +188,8 @@ def process_folder_to_structured_format(input_folder, output_folder):
     success_count = 0
     error_count = 0
     
-    # Process each file
-    for file_name in files:
+    # Process each file with progress bar
+    for file_name in tqdm(files, desc="Converting to structured format", unit="file"):
         in_path = os.path.join(input_folder, file_name)
         out_path = os.path.join(output_folder, file_name)
         

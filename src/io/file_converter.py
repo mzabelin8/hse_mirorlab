@@ -4,6 +4,7 @@ Module for converting XML and JSON files.
 import os
 import json
 import xml.etree.ElementTree as ET
+from tqdm import tqdm
 
 
 def xml_to_json(xml_file_path, json_file_path):
@@ -48,6 +49,7 @@ def process_files_in_directory(input_directory, output_directory):
     Processes all XML files in the specified directory and converts them to JSON.
     Handles exceptions for individual files and prints processing statistics.
     Only error messages are displayed during processing.
+    Uses tqdm for progress visualization.
     
     Args:
         input_directory: Input directory with XML files
@@ -67,8 +69,8 @@ def process_files_in_directory(input_directory, output_directory):
     success_count = 0
     error_count = 0
 
-    # Iterate through each file in the input directory
-    for filename in xml_files:
+    # Iterate through each file in the input directory with progress bar
+    for filename in tqdm(xml_files, desc="Processing XML files", unit="file"):
         # Construct full paths for XML and JSON files
         path_xml = os.path.join(input_directory, filename)
         path_json = os.path.join(
