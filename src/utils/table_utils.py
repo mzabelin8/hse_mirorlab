@@ -153,18 +153,32 @@ def convert_table_to_dataframe(table_data):
 
 def safe_parse_table(table_data):
     """
-    Attempts to parse a table using standard method, then fallback method.
-    
+    Attempts to parse a table using multiple fallback methods until one succeeds.
+
     Args:
         table_data: Tabular data
-        
+
     Returns:
         pandas.DataFrame: Table as a DataFrame
+
+    Raises:
+        ValueError: If all parsing methods fail.
     """
-    try:
-        return convert_table_to_dataframe(table_data)
-    except Exception:
-        return parse_table_2(table_data)
+    parse_methods = [
+        convert_table_to_dataframe,
+        parse_table_2,
+        parse_table,
+        parse_table_wtheader
+    ]
+    
+    for method in parse_methods:
+        try:
+            return method(table_data)
+        except Exception as e:
+            continue  # Try next method
+    
+    raise ValueError("All parsing methods failed for the given table data.")
+
 
 
 def save_table_as_dict(table):
