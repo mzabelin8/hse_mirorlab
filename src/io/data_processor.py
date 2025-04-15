@@ -126,6 +126,7 @@ def process_data_to_structured_format(data):
             "disease_history": data.get("anamnez_d"),
             "life_history": data.get("anamnez_l")
         },
+        "ward_list": data.get("ward_list"),
         "conditions": parse_conditions_as_key_value(data.get("conditions", [])),
         "tables": {
             "table_gosp": save_table_as_dict(safe_parse_table(data["table_gosp"])) if data.get("table_gosp") else None,
