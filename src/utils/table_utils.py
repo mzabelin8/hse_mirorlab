@@ -3,6 +3,9 @@ Utilities for working with tabular data from XML/JSON.
 """
 import pandas as pd
 from src.utils.helpers import clean_keys
+import os
+import json
+from tqdm import tqdm
 
 
 def parse_table(json_data, prefix='{urn:hl7-org:v3}'):
@@ -180,7 +183,6 @@ def safe_parse_table(table_data):
     raise ValueError("All parsing methods failed for the given table data.")
 
 
-
 def save_table_as_dict(table):
     """
     Converts pandas DataFrame to dictionary.
@@ -191,4 +193,47 @@ def save_table_as_dict(table):
     Returns:
         dict: Table as a dictionary
     """
-    return table.to_dict(orient="list") 
+    return table.to_dict(orient="list")
+
+
+def build_dataframe_from_jsons(directory, extract_expressions, column_names=None):
+    """
+    Builds a DataFrame where each row is a JSON file and each column is the result of one of the expressions.
+
+    Args:
+        directory (str): Path to directory with JSON files.
+        extract_expressions (list of str): List of string expressions to extract values from the `data` variable.
+        column_names (list of str, optional): Column names for the resulting table. If None, expressions are used as names.
+
+    Returns:
+        pd.DataFrame: Table with results.
+    """
+    if column_names is None:
+        column_names = extract_expressions
+
+    assert len(column_names) == len(extract_expressions), "Length of column_names must match extract_expressions"
+
+    result = []
+
+    json_files = [f for f in os.listdir(directory) if f.endswith('.json')]
+
+    for filename in tqdm(json_files, desc="Processing files"):
+        filepath = os.path.join(directory, filename)
+        row = {}
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                for col_name, expr in zip(column_names, extract_expressions):
+                    try:
+                        row[col_name] = eval(expr)
+                    except Exception as inner_e:
+                        row[col_name] = None  # or np.nan if preferred
+        except Exception as e:
+            print(f"Error processing {filename}: {e}")
+            continue
+
+        row["filename"] = filename  # Add filename as a column
+        result.append(row)
+
+    df = pd.DataFrame(result)
+    return df 
