@@ -9,13 +9,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-def analyze_json_values(directory, value_expression):
+def analyze_json_values(directory, value_expression, handle_lists=False):
     """
     Extracts values from JSON files and returns a DataFrame with their distribution.
 
     Args:
         directory (str): Path to directory with JSON files.
         value_expression (str): Python expression to extract value from the `data` variable.
+        handle_lists (bool): If True, handles list values by counting each item in the list separately.
 
     Returns:
         pd.DataFrame: Table with columns ["Value", "Count"].
@@ -29,7 +30,17 @@ def analyze_json_values(directory, value_expression):
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 value = eval(value_expression)
-                value_counts[value] += 1
+                
+                if handle_lists and isinstance(value, list):
+                    # Count each item in the list separately
+                    for item in value:
+                        if item is not None:  # Skip None values
+                            value_counts[item] += 1
+                else:
+                    # Handle as a single value
+                    if value is not None:  # Skip None values
+                        value_counts[value] += 1
+                        
         except Exception as e:
             print(f"Error in file {filename}: {e}")
 
@@ -46,7 +57,8 @@ def plot_value_distribution(df, title='Value distribution', num_bins=None):
         title (str): Title of the chart.
         num_bins (int or None): Number of bins. If None, no binning is applied.
     """
-    plt.figure(figsize=(10, 6))
+    figsize = plt.rcParams.get('figure.figsize', (10, 6))
+    plt.figure(figsize=figsize)
 
     if num_bins is not None:
         min_val = df['Value'].min()
@@ -60,10 +72,11 @@ def plot_value_distribution(df, title='Value distribution', num_bins=None):
         plt.xlabel('Value range')
         plt.title(f"{title} (binned into {num_bins} bins)")
     else:
+        plt.title(title)
         plt.bar(df['Value'], df['Count'])
         plt.xlabel('Value')
 
-    plt.xticks(rotation=90, ha='right')
+    plt.xticks(rotation=60, ha='right')
     plt.ylabel('Count')
     plt.tight_layout()
     plt.show()

@@ -108,9 +108,7 @@ def parse_conditions_as_key_value(conditions):
     Returns:
         dict: Structured dictionary with conditions
     """
-    structured = {
-        "raw_list": []
-    }
+    structured = {}
 
     for line in conditions:
         if ":" in line:
@@ -118,16 +116,9 @@ def parse_conditions_as_key_value(conditions):
             key = key.strip()
             value = value.strip()
             structured[key] = value
-            structured["raw_list"].append({
-                "type": key.lower(),
-                "text": value
-            })
         else:
             # If the string doesn't contain ":", record it as is
-            structured["raw_list"].append({
-                "type": "unknown",
-                "text": line.strip()
-            })
+            structured[line.strip()] = None
 
     return structured
 
