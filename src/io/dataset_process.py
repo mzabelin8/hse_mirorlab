@@ -220,5 +220,40 @@ def create_table_generic(folder_path, table_accessor, start_table_id=0, start_pa
     else:
         return pd.DataFrame()
 
+def expand_table_column(df, table_column, parser_func):
+    """
+    Expands the DataFrame by parsing the table_column in each row
+    using parser_func, and converting the resulting two-column table
+    into new columns.
+    
+    Parameters:
+    df (pd.DataFrame): Source DataFrame
+    table_column (str): Name of the column in df containing data to parse
+    parser_func (function): Function that takes a cell content as input
+                            and returns a pd.DataFrame with two columns:
+                            first - names of new columns, second - their values
+    
+    Returns:
+    pd.DataFrame: New DataFrame obtained by concatenating df and expansion from parsed tables
+    """
+    parsed_rows = []
+    # Process all rows
+    for idx, cell in df[table_column].items():
+        try:
+            table_df = parser_func(cell)
+            # Extract keys and values
+            keys = table_df.iloc[:, 0].astype(str).tolist()
+            vals = table_df.iloc[:, 1].tolist()
+            parsed_rows.append(dict(zip(keys, vals)))
+        except Exception:
+            # Empty dictionary in case of parsing error
+            parsed_rows.append({})
+
+    # Create expansion DataFrame
+    expansion_df = pd.DataFrame(parsed_rows, index=df.index)
+
+    # Concatenate along columns
+    return pd.concat([df, expansion_df], axis=1)
+
 
         
