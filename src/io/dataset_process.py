@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import re
+import ast
 from tqdm import tqdm
 
 def extract_number(filename):
@@ -233,13 +234,17 @@ def expand_table_column(df, table_column, parser_func):
     # Process all rows
     for idx, cell in df[table_column].items():
         try:
-            table_df = parser_func(cell)
+            # First apply parse_dict_string to handle potential dictionary strings
+            processed_cell = parse_dict_string(cell)
+            # Then apply the parser function
+            table_df = parser_func(processed_cell)
             # Extract keys and values
             keys = table_df.iloc[:, 0].astype(str).tolist()
             vals = table_df.iloc[:, 1].tolist()
             parsed_rows.append(dict(zip(keys, vals)))
-        except Exception:
+        except Exception as e:
             # Empty dictionary in case of parsing error
+            print(f"Error processing row {idx}: {e}")
             parsed_rows.append({})
 
     # Create expansion DataFrame
@@ -247,6 +252,30 @@ def expand_table_column(df, table_column, parser_func):
 
     # Concatenate along columns
     return pd.concat([df, expansion_df], axis=1)
+
+def parse_dict_string(raw_str):
+    """
+    Converts a string containing a dictionary into an actual Python dict
+    
+    Parameters:
+    raw_str (str or dict): String with content resembling a dictionary, or dictionary itself
+    
+    Returns:
+    dict: Parsed dictionary or empty dict in case of error
+    """
+    # If already a dictionary, return as is
+    if isinstance(raw_str, dict):
+        return raw_str
+        
+    try:
+        # Remove possible outer double quotes
+        clean_str = raw_str.strip('"')
+        # Convert to dictionary
+        result = ast.literal_eval(clean_str)
+        return result
+    except (ValueError, SyntaxError) as e:
+        print(f"Error parsing string: {e}")
+        return {}
 
 
         
