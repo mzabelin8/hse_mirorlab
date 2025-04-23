@@ -231,8 +231,8 @@ def expand_table_column(df, table_column, parser_func):
     pd.DataFrame: New DataFrame obtained by concatenating df and expansion from parsed tables
     """
     parsed_rows = []
-    # Process all rows
-    for idx, cell in df[table_column].items():
+    # Process all rows with progress bar
+    for idx, cell in tqdm(df[table_column].items(), total=len(df), desc="Expanding table column"):
         try:
             # First apply parse_dict_string to handle potential dictionary strings
             processed_cell = parse_dict_string(cell)
