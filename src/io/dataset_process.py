@@ -18,49 +18,42 @@ def extract_number(filename):
     match = re.search(r'\d+', filename)
     return int(match.group()) if match else -1  # return -1 if no number is found
 
-def filter_dataframe_by_substrings(df, column, substrings, operator='AND', negate=False):
+def filter_dataframe_by_patterns(df, column, patterns, operator='AND'):
     """
-    Filters DataFrame based on substring presence in the specified column
+    Filters DataFrame based on a list of regex patterns (or simple strings) in the specified column
     
     Parameters:
     df (pd.DataFrame): Source DataFrame for filtering
-    column (str): Column name to search for substrings
-    substrings (list): List of substrings to search for
-    operator (str): Logical operator to combine conditions ('AND' or 'OR')
-    negate (bool): Invert result (True - exclude matches, False - include matches)
+    column (str): Column name to search for patterns
+    patterns (list): List of regular expressions or simple substrings
+    operator (str): 'AND' - all patterns must match simultaneously,
+                   'OR' - at least one pattern should match
     
     Returns:
     tuple: Two DataFrames - (matching rows, non-matching rows)
     """
-    if not substrings:
+    # If the list is empty, everything matches
+    if not patterns:
         return df.copy(), pd.DataFrame(columns=df.columns)
     
-    if operator.upper() == 'AND':
-        # Initialize mask as all True
-        mask = pd.Series(True, index=df.index)
-        for s in substrings:
-            # Apply AND for all substrings
-            contains = df[column].str.contains(s, case=False, na=False)
-            mask &= contains
-    elif operator.upper() == 'OR':
-        # Initialize mask as all False
-        mask = pd.Series(False, index=df.index)
-        for s in substrings:
-            # Apply OR for all substrings
-            contains = df[column].str.contains(s, case=False, na=False)
-            mask |= contains
-    else:
+    # Validate operator
+    op = operator.upper()
+    if op not in ('AND', 'OR'):
         raise ValueError("Operator must be 'AND' or 'OR'")
     
-    # If negate=True, invert the mask
-    if negate:
-        match_df = df[~mask]
-        not_match_df = df[mask]
-    else:
-        match_df = df[mask]
-        not_match_df = df[~mask]
+    # Initialize mask
+    mask = pd.Series(True, index=df.index) if op == 'AND' else pd.Series(False, index=df.index)
     
-    return match_df, not_match_df
+    for pat in patterns:
+        # Always use regex=True so pattern can be either a simple string or a full regex
+        contains = df[column].str.contains(pat, case=False, na=False, regex=True)
+        if op == 'AND':
+            mask &= contains
+        else:
+            mask |= contains
+    
+    # Split the DataFrame based on the mask and return both parts
+    return df[mask], df[~mask]
 
 def create_patients_table(folder_path, start_id=0):
     """
