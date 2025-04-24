@@ -278,4 +278,53 @@ def parse_dict_string(raw_str):
         return {}
 
 
-        
+def update_dataframe_by_patterns(df, column_to_check, patterns, operator='AND', new_column=None, value=None):
+    """
+    Checks if rows in the specified column satisfy patterns and operator conditions,
+    creates a new column if it doesn't exist, and populates it with the specified value
+    for matching rows.
+
+    Parameters:
+    df (pd.DataFrame): Source DataFrame to process
+    column_to_check (str): Column name to search for patterns
+    patterns (list): List of regular expressions or simple substrings
+    operator (str): 'AND' - all patterns must match simultaneously,
+                    'OR' - at least one pattern should match
+    new_column (str): Name of the column to create/update
+    value: Value to set in the new column for matching rows
+
+    Returns:
+    pd.DataFrame: Modified DataFrame
+    """
+    # Make a copy to avoid modifying the original dataframe
+    result_df = df.copy()
+
+    # If the list is empty, nothing matches
+    if not patterns:
+        return result_df
+
+    # Validate operator
+    op = operator.upper()
+    if op not in ('AND', 'OR'):
+        raise ValueError("Operator must be 'AND' or 'OR'")
+
+    # Check if new_column exists, if not, create it with NaN values
+    if new_column is not None and new_column not in result_df.columns:
+        result_df[new_column] = np.nan
+
+    # Initialize mask
+    mask = pd.Series(True, index=df.index) if op == 'AND' else pd.Series(False, index=df.index)
+
+    for pat in patterns:
+        # Always use regex=True so pattern can be either a simple string or a full regex
+        contains = df[column_to_check].str.contains(pat, case=False, na=False, regex=True)
+        if op == 'AND':
+            mask &= contains
+        else:
+            mask |= contains
+
+    # Update the values in the new column for rows that match
+    if new_column is not None and value is not None:
+        result_df.loc[mask, new_column] = value
+
+    return result_df      
