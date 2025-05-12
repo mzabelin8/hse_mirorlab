@@ -74,7 +74,7 @@ def create_patients_table(folder_path, start_id=0):
     )
     
     for i, file_name in enumerate(tqdm(json_files, desc="Processing patients")):
-        id_patient = start_id + i
+        id_card = start_id + i
         file_path = os.path.join(folder_path, file_name)
         
         try:
@@ -82,7 +82,8 @@ def create_patients_table(folder_path, start_id=0):
                 data = json.load(f)
             
             patient_info = {
-                'id_patient': id_patient,
+                'id_card': id_card,
+                'patient_id': data.get('id'),
                 'source_file': file_name,
                 'sex': data.get('sex'),
                 'birth_date': data.get('birth_date'),
@@ -96,16 +97,16 @@ def create_patients_table(folder_path, start_id=0):
                 patient_info['life_history'] = data['anamnez'].get('life_history')
             
             if 'conditions' in data:
-                patient_info['condition_state'] = data['conditions'].get('Condition')
-                patient_info['condition_complaints'] = data['conditions'].get('Complaints')
-                patient_info['objective_status'] = data['conditions'].get('Objective status')
+                patient_info['condition_state'] = data['conditions'].get('Состояние')
+                patient_info['condition_complaints'] = data['conditions'].get('Жалобы')
+                patient_info['objective_status'] = data['conditions'].get('Объективный статус')
             
             if 'tables' in data and 'final_table1' in data['tables']:
-                patient_info['disease_character'] = data['tables']['final_table1'].get('Character of the main disease')
-                patient_info['hospitalization_outcome'] = data['tables']['final_table1'].get('Hospitalization outcome')
-                patient_info['treatment_result'] = data['tables']['final_table1'].get('Treatment result')
-                patient_info['cancer_suspicion'] = data['tables']['final_table1'].get('Suspicion of malignant neoplasm')
-                patient_info['individual_post'] = data['tables']['final_table1'].get('Individual post deployment')
+                patient_info['disease_character'] = data['tables']['final_table1'].get('Характер основного заболевания')
+                patient_info['hospitalization_outcome'] = data['tables']['final_table1'].get('Исход госпитализации')
+                patient_info['treatment_result'] = data['tables']['final_table1'].get('Результат обращения')
+                patient_info['cancer_suspicion'] = data['tables']['final_table1'].get('Признак подозрения на злокачественное новообразование')
+                patient_info['individual_post'] = data['tables']['final_table1'].get('Признак развертывания индивидуального поста')
             
             patients_data.append(patient_info)
             
@@ -114,14 +115,14 @@ def create_patients_table(folder_path, start_id=0):
     
     return pd.DataFrame(patients_data)
 
-def create_ward_list_table(folder_path, start_entry_id=0, start_patient_id=0):
+def create_ward_list_table(folder_path, start_entry_id=0, start_card_id=0):
     """
     Creates the ward_list table from JSON files in a folder
     
     Parameters:
     folder_path (str): Path to the folder with JSON files
     start_entry_id (int): Starting ID for entries
-    start_patient_id (int): Starting ID for patients
+    start_card_id (int): Starting ID for patients
     
     Returns:
     pd.DataFrame: DataFrame with ward_list information
@@ -134,7 +135,7 @@ def create_ward_list_table(folder_path, start_entry_id=0, start_patient_id=0):
     
     entry_id = start_entry_id
     for i, file_name in enumerate(tqdm(json_files, desc="Processing ward_list")):
-        id_patient = start_patient_id + i
+        id_card = start_card_id + i
         file_path = os.path.join(folder_path, file_name)
         
         try:
@@ -151,7 +152,7 @@ def create_ward_list_table(folder_path, start_entry_id=0, start_patient_id=0):
                         if pd.notna(value):
                             ward_list_data.append({
                                 'id': entry_id,
-                                'id_patient': id_patient,
+                                'id_card': id_card,
                                 'source_file': file_name,
                                 'column_name': col,
                                 'row_index': row_idx,  # Use the actual DataFrame row index
@@ -164,7 +165,7 @@ def create_ward_list_table(folder_path, start_entry_id=0, start_patient_id=0):
     
     return pd.DataFrame(ward_list_data)
 
-def create_table_generic(folder_path, table_accessor, start_table_id=0, start_patient_id=0, id_column_name='table_id'):
+def create_table_generic(folder_path, table_accessor, start_table_id=0, start_card_id=0, id_column_name='table_id'):
     """
     Universal function for creating tables from JSON files
     
@@ -172,7 +173,7 @@ def create_table_generic(folder_path, table_accessor, start_table_id=0, start_pa
     folder_path (str): Path to the folder with JSON files
     table_accessor (str): Code to access the table (e.g., "pd.DataFrame.from_dict(data['tables']['table_gosp'])")
     start_table_id (int): Starting ID for the table
-    start_patient_id (int): Starting ID for patients
+    start_card_id (int): Starting ID for patients
     id_column_name (str): Column name for the table ID
     
     Returns:
@@ -186,7 +187,7 @@ def create_table_generic(folder_path, table_accessor, start_table_id=0, start_pa
     
     table_id = start_table_id
     for i, file_name in enumerate(tqdm(json_files, desc=f"Processing {table_accessor}")):
-        id_patient = start_patient_id + i
+        id_card = start_card_id + i
         file_path = os.path.join(folder_path, file_name)
         
         try:
@@ -199,7 +200,7 @@ def create_table_generic(folder_path, table_accessor, start_table_id=0, start_pa
             
             # If the table is not empty, add IDs
             if not table_df.empty:
-                table_df['id_patient'] = id_patient
+                table_df['id_card'] = id_card
                 table_df[id_column_name] = table_id
                 table_df['source_file'] = file_name
                 
