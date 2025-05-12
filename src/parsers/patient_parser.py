@@ -41,6 +41,23 @@ def get_age(data):
     section_fields = find_section_by_optimized_path(data, short_path_to_section)
     return section_fields['value']
 
+def get_id(data):
+    """
+    Extracts patient ID from data.
+    
+    Args:
+        data: Document JSON data
+        
+    Returns:
+        str: Patient ID extension
+    """
+    short_path_to_section = ['recordTarget', 
+                            'patientRole', 
+                            'id', 0]
+    
+    section_fields = find_section_by_optimized_path(data, short_path_to_section)
+    return section_fields['extension']
+
 def get_amnez_d(data):
     """
     Extracts disease anamnesis from data.

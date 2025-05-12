@@ -16,6 +16,7 @@ from src.parsers.base_parser import get_full_path, SUB_PATH
 from src.parsers.patient_parser import (
     get_sex,
     get_age,
+    get_id,
     get_amnez_d,
     get_amnez_life,
     get_condition,

@@ -4,7 +4,7 @@ Module for data processing and saving.
 import os
 import json
 from tqdm import tqdm
-from src.parsers.patient_parser import get_sex, get_age, get_amnez_d, get_amnez_life, get_condition, parse_conditions_as_key_value
+from src.parsers.patient_parser import get_sex, get_age, get_id, get_amnez_d, get_amnez_life, get_condition, parse_conditions_as_key_value
 from src.parsers.hosp_parser import get_gosp_info, get_diagnosis
 from src.parsers.ward_parser import get_ward_table, compute_full_wards
 from src.parsers.final_parser import get_final_table1, get_final_table2
@@ -31,6 +31,7 @@ def modify_json(in_path, out_path):
         # Extract patient data
         result['sex'] = get_sex(data)
         result['age'] = get_age(data)
+        result['id'] = get_id(data)
         result['anamnez_d'] = get_amnez_d(data)
         result['anamnez_l'] = get_amnez_life(data)
         result['conditions'] = get_condition(data)
@@ -118,6 +119,7 @@ def process_data_to_structured_format(data):
     """
     # Convert data to a more convenient format
     processed_json = {
+        "id": data.get("id"),
         "sex": data.get("sex"),
         "birth_date": data.get("age"),
         "type_gosp": data.get("type_gosp"),
